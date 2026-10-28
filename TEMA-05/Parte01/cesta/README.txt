@@ -1,1 +1,0 @@
-Esto se corresponde con el apartado de los apuntes: 3.- Manejo de sesiones
