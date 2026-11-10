@@ -14,7 +14,7 @@
  *  NOTA: utilidades.php fija la zona horaria Europe/Madrid para todos los ejemplos.
  */
 require_once __DIR__ . '/utilidades.php';
-
+echo "Comienza la prueba.\n";
 // ---------------------------------------------------------------------------------------------
 // time — Devuelve la fecha Unix actual (marca de tiempo)
 // ENLACE: https://www.php.net/manual/es/function.time.php
