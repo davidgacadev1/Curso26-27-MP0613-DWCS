@@ -1,0 +1,4 @@
+# Configuración local (contraseñas, puertos)
+.env
+# Dependencias de Composer de cada proyecto
+www/*/vendor/

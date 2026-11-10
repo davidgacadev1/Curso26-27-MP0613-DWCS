@@ -1,0 +1,32 @@
+# =============================================================================
+#  Segundo servidor web con PHP 8.4 que sirve la MISMA carpeta www/ y usa la
+#  MISMA base de datos. Sirve para comprobar si tu código funciona en otra versión.
+#
+#    docker compose -f compose.yaml -f compose.php84.yaml up -d --build
+#    http://dwcs.localhost:8084   (PHP 8.4)   y   http://dwcs.localhost:8080 (PHP 8.2)
+# =============================================================================
+services:
+  web84:
+    build:
+      context: ./docker
+      dockerfile: php/Dockerfile
+      args:
+        PHP_VERSION: "8.4"
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: dwcs/php-apache:8.4
+    restart: unless-stopped
+    ports:
+      - "8084:80"
+    volumes:
+      - ./www:/var/www
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-dwcs}
+      DB_USER: ${DB_USER:-dwcs}
+      DB_PASSWORD: ${DB_PASSWORD:-dwcs}
+      XDEBUG_MODE: "off"
+    depends_on:
+      db:
+        condition: service_healthy

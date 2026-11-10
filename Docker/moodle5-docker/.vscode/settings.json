@@ -1,0 +1,24 @@
+{
+    "intelephense.environment.phpVersion": "8.3.0",
+    "php.validate.enable": false,
+    "files.autoSave": "afterDelay",
+    "files.eol": "\n",
+    // Moodle tiene más de 60.000 ficheros: no vigilar ni buscar en lo que no importa
+    "files.watcherExclude": {
+        "**/moodle/.git/**": true,
+        "**/moodle/node_modules/**": true,
+        "**/moodle/vendor/**": true
+    },
+    "search.exclude": {
+        "**/moodle/node_modules/**": true,
+        "**/moodle/vendor/**": true,
+        "**/moodle/public/lib/**/tests/**": true
+    },
+    "intelephense.files.exclude": [
+        "**/.git/**", "**/node_modules/**", "**/tests/**", "**/behat/**"
+    ],
+    // Estilo de código de Moodle: 4 espacios, líneas de 132 como máximo
+    "editor.rulers": [132],
+    "[php]": { "editor.tabSize": 4 },
+    "[mustache]": { "editor.tabSize": 4 }
+}

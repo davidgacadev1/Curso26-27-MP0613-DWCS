@@ -1,0 +1,16 @@
+{
+    "intelephense.environment.phpVersion": "8.3.0",
+    // Autocompletado de las funciones de WordPress sin tener el núcleo en la carpeta
+    "intelephense.stubs": [
+        "apache", "bcmath", "Core", "ctype", "curl", "date", "dom", "exif", "fileinfo", "filter",
+        "gd", "hash", "iconv", "intl", "json", "libxml", "mbstring", "mysqli", "openssl", "pcre",
+        "PDO", "random", "Reflection", "session", "SimpleXML", "sodium", "SPL", "standard",
+        "tokenizer", "xml", "zip", "zlib", "wordpress"
+    ],
+    "php.validate.enable": false,
+    "files.autoSave": "afterDelay",
+    "files.eol": "\n",
+    // No indexar lo que no es tuyo
+    "files.watcherExclude": { "**/wp-content/uploads/**": true },
+    "search.exclude": { "**/wp-content/uploads/**": true, "**/wp-content/languages/**": true }
+}

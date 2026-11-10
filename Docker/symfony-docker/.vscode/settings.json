@@ -1,0 +1,16 @@
+{
+    "intelephense.environment.phpVersion": "8.4.0",
+    "php.validate.enable": false,
+    "files.autoSave": "afterDelay",
+    "files.eol": "\n",
+    "files.watcherExclude": {
+        "**/src/vendor/**": true,
+        "**/src/var/**": true
+    },
+    "search.exclude": {
+        "**/src/vendor/**": true,
+        "**/src/var/**": true,
+        "**/src/assets/vendor/**": true
+    },
+    "intelephense.files.exclude": ["**/.git/**", "**/var/cache/**"]
+}

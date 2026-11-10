@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carta del Bar Baio{% endblock %}
+
+{% block body %}
+<main class="carta">
+    <h1>Carta del Bar Baio</h1>
+
+    {% for mensaje in app.flashes('aviso') %}
+        <p class="aviso">{{ mensaje }}</p>
+    {% endfor %}
+
+    {% for grupo in carta %}
+        <h2>{{ grupo.titulo }}</h2>
+        <ul>
+            {% for plato in grupo.platos %}
+                <li>
+                    <span>{{ plato.nombre }}{% if plato.vegano %} 🌱{% endif %}</span>
+                    <strong>{{ plato.precio|number_format(2, ',', '.') }} €</strong>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Todavía no hay platos en la carta.</p>
+    {% endfor %}
+
+    <h2>Añadir un plato</h2>
+    {# form_start añade el token CSRF; form_row pinta etiqueta, campo y errores #}
+    {{ form_start(formulario, {attr: {class: 'formulario', novalidate: 'novalidate'}}) }}
+        {{ form_row(formulario.nombre) }}
+        {{ form_row(formulario.tipo) }}
+        {{ form_row(formulario.precio) }}
+        {{ form_row(formulario.vegano) }}
+        {{ form_row(formulario.guardar) }}
+    {{ form_end(formulario) }}
+
+    <p class="pie">Symfony {{ constant('Symfony\\Component\\HttpKernel\\Kernel::VERSION') }} ·
+        <a href="{{ path('api_carta') }}">JSON</a></p>
+</main>
+{% endblock %}

@@ -1,0 +1,9 @@
+.env
+# De wp-content solo interesa versionar TU código
+wp-content/*
+!wp-content/plugins/
+wp-content/plugins/*
+!wp-content/plugins/bk-carta-baio/
+!wp-content/themes/
+wp-content/themes/*
+!wp-content/themes/baio-hijo/

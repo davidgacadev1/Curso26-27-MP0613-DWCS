@@ -1,0 +1,5 @@
+.baio-carta { border: 2px solid currentColor; border-radius: 12px; padding: 1rem 1.5rem; }
+.baio-carta ul { list-style: none; padding: 0; }
+.baio-carta li { display: flex; gap: .5rem; border-bottom: 1px dotted #999; padding: .3rem 0; }
+.baio-carta li a { flex: 1; text-decoration: none; }
+.baio-precio { font-weight: bold; white-space: nowrap; }

@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xdebug en Docker (WordPress)",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                // Solo wp-content está en tu equipo: puntos de ruptura en plugins y temas
+                "/var/www/html/wp-content": "${workspaceFolder}/wp-content"
+            },
+            // No pararse en el código del núcleo, que no está en tu carpeta
+            "skipFiles": ["/var/www/html/wp-includes/**", "/var/www/html/wp-admin/**"]
+        }
+    ]
+}

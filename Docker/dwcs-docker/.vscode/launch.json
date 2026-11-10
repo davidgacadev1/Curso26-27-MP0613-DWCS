@@ -1,0 +1,17 @@
+{
+    // Depuración con Xdebug de PHP que se ejecuta DENTRO del contenedor "web".
+    // Requiere la extensión "PHP Debug" (xdebug.php-debug).
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xdebug en Docker",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            // Ruta en el contenedor  ->  ruta en tu equipo
+            "pathMappings": {
+                "/var/www": "${workspaceFolder}/www"
+            }
+        }
+    ]
+}

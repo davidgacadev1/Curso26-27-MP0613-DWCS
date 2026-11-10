@@ -73,8 +73,12 @@ $b11 = false;
 $r11d = !($a11 || $b11) === (!$a11 && !$b11);
 $r11dd = !($a11 || $b11) === !$a11 && !$b11;
 
-
-
+// Ojo!!!: operadores or y and tienen menor precedencia que asignación
+$a12 = true;
+$b12 = false;
+$aviso = $a12 or $b12;    // equivale a ($aviso = $a12) or $b12;
+$aviso2 = $a12 || $b12;   // equivale a ($aviso2 = ($a12 || $b12));
+$aviso3 = $b12 or die();  //  si $b12 es false, se ejecuta die() y termina el script
 
 echo PHP_EOL . "FIN";
 ?>

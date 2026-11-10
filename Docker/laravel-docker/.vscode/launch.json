@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xdebug en Docker (Laravel)",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/var/www/html": "${workspaceFolder}/src"
+            },
+            // No entrar en el código del framework al depurar paso a paso
+            "skipFiles": ["**/vendor/**"]
+        }
+    ]
+}
