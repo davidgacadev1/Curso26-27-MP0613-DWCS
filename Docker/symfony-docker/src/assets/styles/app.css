@@ -1,0 +1,20 @@
+/* Estilos de la aplicación. AssetMapper los sirve sin compilar (no hace falta Node) */
+body {
+    margin: 0;
+    background: #f7f3ea;
+    color: #1d2b36;
+    font-family: system-ui, sans-serif;
+}
+.carta { max-width: 42rem; margin: 0 auto; padding: 1.5rem; }
+.carta h1 { color: #0b5c8a; font-size: 2.2rem; }
+.carta h2 { color: #b5452f; border-bottom: 2px solid #b5452f; margin-top: 1.5rem; }
+.carta ul { list-style: none; padding: 0; }
+.carta li { display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: .3rem 0; }
+.aviso { background: #dcfce7; color: #166534; padding: .6rem; border-radius: 6px; }
+.formulario { display: grid; gap: .5rem; }
+.formulario input[type=text], .formulario input[type=number], .formulario select {
+    width: 100%; padding: .4rem; box-sizing: border-box;
+}
+.formulario button { background: #0b5c8a; color: #fff; border: 0; padding: .6rem; font-weight: bold; border-radius: 6px; }
+.formulario ul { color: #b91c1c; }
+.pie { color: #64748b; font-size: .9rem; margin-top: 2rem; }

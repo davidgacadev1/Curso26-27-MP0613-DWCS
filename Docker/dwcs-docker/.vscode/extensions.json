@@ -1,0 +1,11 @@
+{
+    // VS Code propone instalar estas extensiones al abrir la carpeta
+    "recommendations": [
+        "xdebug.php-debug",
+        "bmewburn.vscode-intelephense-client",
+        "ms-azuretools.vscode-containers",
+        "ms-vscode-remote.remote-containers",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-mysql"
+    ]
+}

@@ -1,0 +1,123 @@
+# =============================================================================
+#  Entorno de desarrollo de Moodle 5 (plugins y temas)
+#  Apache + PHP 8.3 (Xdebug, Composer) + MariaDB 11.4 + cron + Mailpit + phpMyAdmin
+#
+#  1) Código de Moodle en ./moodle  (scripts/obtener-moodle.ps1 o .sh)
+#  2) docker compose up -d --build
+#  3) docker compose exec -u www-data web bash /scripts/instalar.sh
+#
+#  URLs (puertos del .env):
+#    http://localhost:8100   Moodle (admin / Admin.1234)
+#    http://localhost:8101   phpMyAdmin
+#    http://localhost:8027   Mailpit
+# =============================================================================
+name: moodledev
+
+# Bloque común a "web" y "cron" (misma imagen, mismos volúmenes)
+x-moodle: &moodle
+  build:
+    context: ./docker
+    dockerfile: php/Dockerfile
+    args:
+      PHP_VERSION: ${PHP_VERSION:-8.3}
+      UID: ${UID:-1000}
+      GID: ${GID:-1000}
+  image: moodledev/php-apache:${PHP_VERSION:-8.3}
+  environment: &moodle-env
+    MOODLE_URL: ${MOODLE_URL:-http://localhost:8100}
+    MOODLE_DB_HOST: db
+    MOODLE_DB_NAME: ${DB_NAME:-moodle}
+    MOODLE_DB_USER: ${DB_USER:-moodle}
+    MOODLE_DB_PASSWORD: ${DB_PASSWORD:-moodle}
+    MOODLE_DOCROOT: ${MOODLE_DOCROOT:-/var/www/moodle/public}
+    MOODLE_ADMIN_PASSWORD: ${MOODLE_ADMIN_PASSWORD:-Admin.1234}
+    XDEBUG_MODE: ${XDEBUG_MODE:-debug}
+    # Composer escribe su caché aquí (www-data no puede escribir en /var/www)
+    COMPOSER_HOME: /tmp/composer
+  volumes:
+    # Código de Moodle (git clone) en tu equipo
+    - ./moodle:/var/www/moodle
+    # config.php propio, de solo lectura
+    - ./config/config.php:/var/www/moodle/config.php:ro
+    # TUS plugins: cada carpeta de ./plugins aparece en su sitio dentro de Moodle
+    - ./plugins/local_baio:${MOODLE_PUBLIC:-/var/www/moodle/public}/local/baio
+    - ./plugins/block_baio:${MOODLE_PUBLIC:-/var/www/moodle/public}/blocks/baio
+    - ./plugins/theme_baio:${MOODLE_PUBLIC:-/var/www/moodle/public}/theme/baio
+    # moodledata en un volumen con nombre (rápido y con los permisos correctos)
+    - moodledata:/var/www/moodledata
+    - phpunitdata:/var/www/phpunitdata
+    - ./scripts:/scripts:ro
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+
+  web:
+    <<: *moodle
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8100}:80"
+
+  # Tareas programadas de Moodle: cron.php cada minuto (misma imagen, otra orden).
+  # admin/cli está en la raíz del código (en Moodle 5.1+ también: fuera de public).
+  cron:
+    <<: *moodle
+    restart: unless-stopped
+    user: www-data
+    environment:
+      <<: *moodle-env
+      XDEBUG_MODE: "off"
+    command: >
+      bash -c 'while true; do
+        [ -f /var/www/moodle/vendor/autoload.php ] &&
+        php /var/www/moodle/admin/cli/cron.php --keep-alive=0 > /dev/null 2>&1;
+        sleep 60; done'
+
+  db:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT_HOST:-3310}:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME:-moodle}
+      MARIADB_USER: ${DB_USER:-moodle}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-moodle}
+    # Moodle necesita utf8mb4
+    command: >
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      --skip-name-resolve
+    volumes:
+      - datos-mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8101}:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAIL_PORT:-8027}:8025"
+
+volumes:
+  moodledata:
+  phpunitdata:
+  datos-mariadb:

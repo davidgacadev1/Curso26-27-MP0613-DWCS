@@ -1,0 +1,20 @@
+/*
+Theme Name:   Baio (hijo de Twenty Twenty-Five)
+Description:  Tema hijo de ejemplo para la web del Bar Baio. Cambia colores y tipografía con theme.json y añade una plantilla para los platos.
+Author:       BK Programación
+Template:     twentytwentyfive
+Version:      1.0.0
+Requires at least: 6.5
+Requires PHP: 8.2
+License:      GPL-2.0-or-later
+Text Domain:  baio-hijo
+*/
+
+/* CSS propio: lo que no se puede expresar con theme.json */
+.baio-precio {
+    color: var(--wp--preset--color--baio-mar);
+    font-size: 1.4rem;
+}
+.wp-block-post-title a:hover {
+    text-decoration: underline wavy;
+}

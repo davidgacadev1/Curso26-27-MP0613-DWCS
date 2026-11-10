@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- EJEMPLO  respuesta del servidor al formulario  -->
 
-<html lang="es">
+<html lang="es"> 
 
   <head>
     <meta charset="utf-8">
@@ -23,7 +23,7 @@
 	  $email   = htmlspecialchars($_POST['email_usuario']);
 	  $mensaje = htmlspecialchars($_POST['mensaje_usuario']);
 
-	  echo  'Hola ' . $usuario . ' en la dirección de correo: '. $email . '<br>' ;
+	  echo  'Hola ' . $usuario . ' en la  dirección de correo: '. $email . '<br>' ;
 	  echo 'Hemos recibido tu mensaje: ' . $mensaje;
 	?>
   </body>

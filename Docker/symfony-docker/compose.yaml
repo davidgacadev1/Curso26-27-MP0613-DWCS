@@ -1,0 +1,114 @@
+# =============================================================================
+#  Entorno de desarrollo de Symfony
+#  FrankenPHP (Caddy + PHP 8.4, Xdebug, Composer) + PostgreSQL 17 + Adminer
+#  + Mailpit + trabajador de Symfony Messenger
+#
+#  Primera vez:  docker compose up -d --build
+#                docker compose exec php bash /scripts/preparar.sh
+#  Consola:      docker compose exec php bin/console debug:router
+#
+#  URLs (puertos del .env):
+#    http://localhost:8120          la aplicación (FrankenPHP)
+#    http://localhost:8120/carta    ejemplo del Bar Baio
+#    http://localhost:8121          Adminer (servidor: database, usuario/clave: app)
+#    http://localhost:8029          Mailpit
+# =============================================================================
+name: symfonydev
+
+# Bloque común a "php" y "worker" (misma imagen, mismo código, mismas variables)
+x-php: &php
+  build:
+    context: ./docker
+    dockerfile: php/Dockerfile
+    args:
+      PHP_VERSION: ${PHP_VERSION:-8.4}
+      UID: ${UID:-1000}
+      GID: ${GID:-1000}
+  image: symfonydev/frankenphp:${PHP_VERSION:-8.4}
+  volumes:
+    - ./src:/app
+    # var/ (caché y logs de Symfony) en un volumen de Docker: Symfony lee y escribe ahí
+    # miles de ficheros en cada petición y en una carpeta de Windows es muy lento
+    - symfony-var:/app/var
+    - ./scripts:/scripts:ro
+  environment: &php-env
+    # Las variables de entorno REALES tienen prioridad sobre los ficheros .env de Symfony:
+    # así el proyecto funciona en Docker sin tocar su .env
+    APP_ENV: dev
+    DATABASE_URL: postgresql://${DB_USER:-app}:${DB_PASSWORD:-app}@database:5432/${DB_NAME:-app}?serverVersion=17&charset=utf8
+    MAILER_DSN: smtp://mailpit:1025
+    MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+    XDEBUG_MODE: ${XDEBUG_MODE:-debug,develop}
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  depends_on:
+    database:
+      condition: service_healthy
+
+services:
+
+  # --- FrankenPHP: servidor web y PHP en un solo contenedor --------------------
+  php:
+    <<: *php
+    restart: unless-stopped
+    environment:
+      <<: *php-env
+      SERVER_NAME: ":80"
+    ports:
+      - "${WEB_PORT:-8120}:80"
+
+  # --- Trabajador de Messenger: procesa los mensajes en cola (correos, etc.) ---
+  worker:
+    <<: *php
+    restart: unless-stopped
+    environment:
+      <<: *php-env
+      XDEBUG_MODE: "off"
+    # La imagen de FrankenPHP comprueba la salud del servidor web, que aquí no se arranca
+    healthcheck:
+      disable: true
+    command: >
+      bash -c 'until [ -f vendor/autoload_runtime.php ] && php bin/console messenger:stats >/dev/null 2>&1;
+               do echo "Esperando al proyecto Symfony..."; sleep 10; done;
+               exec php bin/console messenger:consume async -vv --time-limit=3600'
+
+  # --- PostgreSQL ---------------------------------------------------------------
+  database:
+    image: postgres:${POSTGRES_VERSION:-17}-alpine
+    restart: unless-stopped
+    ports:
+      # Desde tu equipo (DBeaver, extensión de VS Code...): 127.0.0.1:5433
+      - "${DB_PORT_HOST:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-app}
+      POSTGRES_USER: ${DB_USER:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-app}
+      TZ: Europe/Madrid
+    volumes:
+      - datos-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-app} -d ${DB_NAME:-app}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- Adminer: administrador de bases de datos en un solo fichero PHP ---------
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8121}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: database
+    depends_on:
+      - database
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAIL_PORT:-8029}:8025"
+
+volumes:
+  datos-postgres:
+  symfony-var:

@@ -1,0 +1,36 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_baio/saludo
+
+    Saludo y lista de cursos del usuario.
+
+    Example context (json):
+    {
+        "saludo": "¡Benvido ao campus do Bar Baio!",
+        "hola": "¡Hola, Carlos!",
+        "haycursos": true,
+        "cursos": [{"nombre": "Cociña galega", "url": "#"}]
+    }
+}}
+<div class="local-baio card p-3">
+    <h3 class="text-primary">{{saludo}}</h3>
+    <p class="lead">{{hola}}</p>
+    <h4>{{#str}} mycourses, local_baio {{/str}}</h4>
+    {{#haycursos}}
+        <ul>
+            {{#cursos}}
+                <li><a href="{{url}}">{{nombre}}</a></li>
+            {{/cursos}}
+        </ul>
+    {{/haycursos}}
+    {{^haycursos}}
+        <p class="alert alert-info">{{#str}} nocourses, local_baio {{/str}}</p>
+    {{/haycursos}}
+</div>

@@ -1,0 +1,4 @@
+<h1>¡Plato nuevo!</h1>
+<p>Se ha añadido <strong>{{ plato.nombre }}</strong> ({{ plato.tipo.titulo }}) a
+    {{ plato.precio|number_format(2, ',', '.') }} €.</p>
+{% if plato.vegano %}<p>🌱 Es vegano.</p>{% endif %}

@@ -1,0 +1,18 @@
+# =============================================================================
+#  Configuración de Caddy + FrankenPHP para desarrollo.
+#  SERVER_NAME=":80" (compose.yaml): solo HTTP, sin certificado HTTPS automático.
+# =============================================================================
+{
+	skip_install_trust
+	frankenphp
+}
+
+{$SERVER_NAME::80} {
+	# Solo public/ es accesible desde la web
+	root public/
+	encode zstd br gzip
+
+	# php_server: sirve los ficheros que existen y envía lo demás a public/index.php
+	# (el controlador frontal de Symfony). Equivale a try_files de Nginx.
+	php_server
+}

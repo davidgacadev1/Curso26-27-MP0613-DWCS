@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xdebug en Docker (Moodle)",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            // Las rutas más concretas primero: tus plugins están montados DENTRO de moodle/public
+            "pathMappings": {
+                "/var/www/moodle/public/local/baio": "${workspaceFolder}/plugins/local_baio",
+                "/var/www/moodle/public/blocks/baio": "${workspaceFolder}/plugins/block_baio",
+                "/var/www/moodle/public/theme/baio": "${workspaceFolder}/plugins/theme_baio",
+                "/var/www/moodle/config.php": "${workspaceFolder}/config/config.php",
+                "/var/www/moodle": "${workspaceFolder}/moodle"
+            },
+            // Moodle hace muchas peticiones (AJAX, estilos, JS): ignora los avisos de Xdebug
+            "ignore": ["**/vendor/**"],
+            "maxConnections": 5
+        }
+    ]
+}

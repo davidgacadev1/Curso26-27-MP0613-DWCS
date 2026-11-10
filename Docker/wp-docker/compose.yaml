@@ -1,0 +1,107 @@
+# =============================================================================
+#  Entorno de desarrollo de WordPress (plugins y temas)
+#  WordPress (Apache + PHP 8.3 + Xdebug + WP-CLI) + MariaDB + phpMyAdmin + Mailpit
+#
+#  Arrancar:   docker compose up -d --build
+#  Instalar:   docker compose exec -u www-data wordpress bash /scripts/instalar.sh
+#  WP-CLI:     docker compose exec -u www-data wordpress wp plugin list
+#
+#  URLs (puertos del .env):
+#    http://localhost:8090            web          (admin: /wp-admin, admin / admin)
+#    http://localhost:8091            phpMyAdmin
+#    http://localhost:8026            Mailpit
+# =============================================================================
+name: wpdev
+
+# Variables comunes: wp-config.php (el de la imagen oficial) las lee con getenv()
+x-wp-env: &wp-env
+  WORDPRESS_DB_HOST: db
+  WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
+  WORDPRESS_DB_USER: ${DB_USER:-wordpress}
+  WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-wordpress}
+  WORDPRESS_TABLE_PREFIX: wp_
+  WORDPRESS_DEBUG: 1
+  # Constantes extra que se añaden a wp-config.php
+  WORDPRESS_CONFIG_EXTRA: |
+    define('WP_ENVIRONMENT_TYPE', 'local');
+    define('WP_DEBUG_LOG', true);
+    define('WP_DEBUG_DISPLAY', true);
+    define('SCRIPT_DEBUG', true);
+    define('SAVEQUERIES', true);
+    define('DISALLOW_FILE_EDIT', true);
+    define('WP_POST_REVISIONS', 5);
+
+services:
+
+  wordpress:
+    build:
+      context: ./docker/wordpress
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: wpdev/wordpress:php8.3
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8090}:80"
+    environment:
+      <<: *wp-env
+      XDEBUG_MODE: ${XDEBUG_MODE:-debug,develop}
+      # Datos para scripts/instalar.sh
+      WP_URL: ${WP_URL:-http://localhost:8090}
+      WP_ADMIN: ${WP_ADMIN:-admin}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:-admin}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:-admin@bkprogramacion.test}
+    volumes:
+      # Núcleo de WordPress en un volumen con nombre (rápido, no lo tocas)
+      - wp-core:/var/www/html
+      # wp-content en TU carpeta: aquí programas plugins y temas
+      - ./wp-content:/var/www/html/wp-content
+      # Scripts de instalación (solo lectura)
+      - ./scripts:/scripts:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT_HOST:-3309}:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME:-wordpress}
+      MARIADB_USER: ${DB_USER:-wordpress}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-wordpress}
+    volumes:
+      - datos-mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8091}:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      UPLOAD_LIMIT: 256M
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAIL_PORT:-8026}:8025"
+
+volumes:
+  wp-core:
+  datos-mariadb:

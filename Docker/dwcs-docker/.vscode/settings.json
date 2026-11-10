@@ -1,0 +1,11 @@
+{
+    // Versión de PHP que usa Intelephense para avisar de errores (la del contenedor)
+    "intelephense.environment.phpVersion": "8.2.0",
+    // El PHP de tu equipo no hace falta: el que cuenta está en Docker
+    "php.validate.enable": false,
+    "files.autoSave": "afterDelay",
+    "files.eol": "\n",
+    "[php]": {
+        "editor.tabSize": 4
+    }
+}

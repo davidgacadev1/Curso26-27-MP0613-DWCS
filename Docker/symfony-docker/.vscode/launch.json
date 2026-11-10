@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xdebug en Docker (Symfony)",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/app": "${workspaceFolder}/src"
+            },
+            // No entrar en el código del framework al depurar paso a paso
+            "skipFiles": ["**/vendor/**", "**/var/cache/**"]
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+/* Moodle carga styles.css de cada plugin automáticamente (purga cachés si no lo ves). */
+.block-baio-menu {
+    list-style: "🍽  ";
+    padding-left: 1.5rem;
+}

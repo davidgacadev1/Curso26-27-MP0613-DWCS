@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "xdebug.php-debug",
+        "bmewburn.vscode-intelephense-client",
+        "ms-azuretools.vscode-containers",
+        "laravel.vscode-laravel",
+        "bradlc.vscode-tailwindcss"
+    ]
+}

@@ -1,0 +1,103 @@
+# =============================================================================
+#  Entorno base de desarrollo PHP (tipo XAMPP) para MP0613-DWCS
+#  Apache + PHP 8.2 (con Xdebug y Composer) + MariaDB + phpMyAdmin + Mailpit
+#
+#  Arrancar:   docker compose up -d --build
+#  Parar:      docker compose stop        (o "down" para borrar contenedores)
+#  Consola:    docker compose exec web bash
+#
+#  URLs (con los puertos por defecto del fichero .env):
+#    http://localhost:8080             panel del entorno
+#    http://dwcs.localhost:8080        tu código        (carpeta www/dwcs)
+#    http://dwcs-profe.localhost:8080  código del profe (carpeta www/dwcs-profe)
+#    http://CARPETA.localhost:8080     cualquier otra carpeta de www/
+#    http://localhost:8081             phpMyAdmin
+#    http://localhost:8025             Mailpit (correos que envía PHP)
+# =============================================================================
+name: dwcs
+
+services:
+
+  # --- Servidor web: Apache + PHP --------------------------------------------
+  web:
+    build:
+      context: ./docker
+      dockerfile: php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.2}
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: dwcs/php-apache:${PHP_VERSION:-8.2}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      # Volumen "bind mount": la carpeta local www/ es /var/www en el contenedor.
+      # Lo que guardes en VS Code se ve al instante en el navegador.
+      - ./www:/var/www
+    environment:
+      # Datos de conexión que pueden leer tus scripts con getenv()
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-dwcs}
+      DB_USER: ${DB_USER:-dwcs}
+      DB_PASSWORD: ${DB_PASSWORD:-dwcs}
+      # Xdebug lee esta variable directamente: off | debug | develop | debug,develop | profile...
+      XDEBUG_MODE: ${XDEBUG_MODE:-debug,develop}
+    extra_hosts:
+      # En Windows y macOS ya existe; en Linux hay que crearlo para que Xdebug llegue a VS Code
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # --- Base de datos: MariaDB ------------------------------------------------
+  db:
+    image: mariadb:${MARIADB_VERSION:-11.4}
+    restart: unless-stopped
+    ports:
+      # Desde tu equipo (VS Code, HeidiSQL, DBeaver...) conéctate a 127.0.0.1:3308
+      - "${DB_PORT_HOST:-3308}:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME:-dwcs}
+      MARIADB_USER: ${DB_USER:-dwcs}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-dwcs}
+      TZ: Europe/Madrid
+    volumes:
+      # Volumen con nombre: los datos sobreviven a "docker compose down"
+      - datos-mariadb:/var/lib/mysql
+      # Configuración propia (utf8mb4, zona horaria...)
+      - ./docker/mariadb/dwcs.cnf:/etc/mysql/conf.d/dwcs.cnf:ro
+      # Scripts .sql que se ejecutan SOLO la primera vez (con el volumen vacío)
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- phpMyAdmin --------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      UPLOAD_LIMIT: 128M
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # --- Mailpit: atrapa todos los correos que envía PHP con mail() o SMTP ------
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAIL_PORT:-8025}:8025"
+
+volumes:
+  datos-mariadb:
